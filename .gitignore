@@ -3,7 +3,9 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.example
 *.egg-info/
 .pytest_cache/
 node_modules/
 frontend/dist/
+.python-version
