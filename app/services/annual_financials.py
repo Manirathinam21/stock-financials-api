@@ -557,20 +557,35 @@ async def _process_filing(filing: dict, sem: asyncio.Semaphore) -> dict:
     }
 
 
+<<<<<<< HEAD
 def _filter_by_report_type(filings: list, report_type: str) -> list:
     if report_type == "consolidated":
         return [f for f in filings if f.get("gfrConsolidated") == "Consolidated"]
     if report_type == "standalone":
+=======
+def _filter_by_consolidated(filings: list, consolidated) -> list:
+    if consolidated is True:
+        return [f for f in filings if f.get("gfrConsolidated") == "Consolidated"]
+    if consolidated is False:
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
         return [f for f in filings if f.get("gfrConsolidated") == "Standalone"]
     return filings
 
 
+<<<<<<< HEAD
 async def _fetch_and_process_filings(symbol: str, report_type: str = "both") -> list:
+=======
+async def _fetch_and_process_filings(symbol: str, consolidated) -> list:
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     filings_raw = await _fetch_integrated_filing_list(symbol)
     if not filings_raw:
         return []
 
+<<<<<<< HEAD
     filings_raw = _filter_by_report_type(filings_raw, report_type)
+=======
+    filings_raw = _filter_by_consolidated(filings_raw, consolidated)
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     if not filings_raw:
         return []
 
@@ -580,14 +595,24 @@ async def _fetch_and_process_filings(symbol: str, report_type: str = "both") -> 
     return [f for f in all_filings if f]
 
 
+<<<<<<< HEAD
 async def get_stock_balance_sheet(symbol: str, report_type: str = "both") -> dict:
+=======
+async def get_stock_balance_sheet(symbol: str, consolidated: bool = None) -> dict:
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     """
     Get annual Balance Sheet data for a stock (only available in annual
     audited filings).
 
+<<<<<<< HEAD
     report_type: "both" (default), "consolidated" only, or "standalone" only.
     """
     all_filings = await _fetch_and_process_filings(symbol, report_type)
+=======
+    consolidated: None -> both, True -> consolidated only, False -> standalone only.
+    """
+    all_filings = await _fetch_and_process_filings(symbol, consolidated)
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     if not all_filings:
         return {}
 
@@ -607,14 +632,24 @@ async def get_stock_balance_sheet(symbol: str, report_type: str = "both") -> dic
     return {"symbol": symbol, "total_filings": len(bs_filings), "filings": bs_filings}
 
 
+<<<<<<< HEAD
 async def get_stock_cash_flow(symbol: str, report_type: str = "both") -> dict:
+=======
+async def get_stock_cash_flow(symbol: str, consolidated: bool = None) -> dict:
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     """
     Get annual Cash Flow Statement for a stock (only available in annual
     audited filings).
 
+<<<<<<< HEAD
     report_type: "both" (default), "consolidated" only, or "standalone" only.
     """
     all_filings = await _fetch_and_process_filings(symbol, report_type)
+=======
+    consolidated: None -> both, True -> consolidated only, False -> standalone only.
+    """
+    all_filings = await _fetch_and_process_filings(symbol, consolidated)
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     if not all_filings:
         return {}
 
@@ -634,13 +669,23 @@ async def get_stock_cash_flow(symbol: str, report_type: str = "both") -> dict:
     return {"symbol": symbol, "total_filings": len(cf_filings), "filings": cf_filings}
 
 
+<<<<<<< HEAD
 async def get_stock_annual_report(symbol: str, report_type: str = "both") -> dict:
+=======
+async def get_stock_annual_report(symbol: str, consolidated: bool = None) -> dict:
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     """
     Get the comprehensive annual filing set (P&L, Balance Sheet, Cash Flow,
     Segments) from NSE's Integrated Filing API. For quarterly filings in
     this feed, only P&L and segments are populated.
 
+<<<<<<< HEAD
     report_type: "both" (default), "consolidated" only, or "standalone" only.
     """
     results = await _fetch_and_process_filings(symbol, report_type)
+=======
+    consolidated: None -> both, True -> consolidated only, False -> standalone only.
+    """
+    results = await _fetch_and_process_filings(symbol, consolidated)
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     return {"symbol": symbol, "total_filings": len(results), "filings": results}

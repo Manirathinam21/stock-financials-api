@@ -10,12 +10,18 @@ Run with:
 
 import logging
 from contextlib import asynccontextmanager
+<<<<<<< HEAD
 from pathlib import Path
+=======
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+<<<<<<< HEAD
 from fastapi.staticfiles import StaticFiles
+=======
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
 
 from app.api.routes import router as financials_router
 from app.config import settings
@@ -59,12 +65,21 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={"detail": "Internal server error while fetching NSE data."})
 
 
+<<<<<<< HEAD
+=======
+@app.get("/", tags=["health"])
+async def root():
+    return {"status": "ok", "service": settings.APP_NAME, "version": settings.APP_VERSION}
+
+
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
 @app.get("/health", tags=["health"])
 async def health():
     return {"status": "healthy"}
 
 
 app.include_router(financials_router, prefix="/api/v1", tags=["financials"])
+<<<<<<< HEAD
 
 # ---------------------------------------------------------------------------
 # Frontend: when the React build exists (Docker/Render), serve it from "/".
@@ -79,3 +94,5 @@ else:
     @app.get("/", tags=["health"])
     async def root():
         return {"status": "ok", "service": settings.APP_NAME, "version": settings.APP_VERSION}
+=======
+>>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
