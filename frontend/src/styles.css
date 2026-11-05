@@ -1,0 +1,106 @@
+:root {
+  --bg: #f4f6fa;
+  --card: #fff;
+  --text: #1b2333;
+  --muted: #6b7587;
+  --border: #e1e6ef;
+  --accent: #2456d6;
+  --accent-soft: #e8eefc;
+  --green: #12805c;
+  --red: #c0392b;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f141d;
+    --card: #171e2b;
+    --text: #e6eaf2;
+    --muted: #8d98ad;
+    --border: #283042;
+    --accent: #6c8dff;
+    --accent-soft: #1e2a4a;
+    --green: #3ecf9b;
+    --red: #ff7b6b;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.app { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+h1 { margin: 0; font-size: 24px; }
+h2 { margin: 0 0 12px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.result-title { font-size: 18px; margin: 20px 0 8px; }
+.muted { color: var(--muted); font-size: 13px; margin: 2px 0; }
+footer { margin-top: 32px; }
+
+.health { font-size: 12px; padding: 4px 10px; border-radius: 99px; background: var(--border); color: var(--muted); }
+.health.ok { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
+.health.bad { background: color-mix(in srgb, var(--red) 18%, transparent); color: var(--red); }
+
+.tabs { display: flex; gap: 4px; margin: 20px 0 12px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+.tabs button {
+  background: none; border: none; color: var(--muted); padding: 8px 14px; cursor: pointer;
+  font: inherit; border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 14px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.controls label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+input, select {
+  font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 10px; min-width: 150px;
+}
+input { text-transform: uppercase; }
+button.primary {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 9px 18px;
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+button.primary:disabled { opacity: 0.6; cursor: wait; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+.chip {
+  background: var(--accent-soft); color: var(--accent); border: none; border-radius: 99px;
+  padding: 3px 10px; font-size: 12px; cursor: pointer;
+}
+
+.status { display: flex; gap: 14px; align-items: center; }
+.spinner {
+  width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite; flex: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { border-color: var(--red); }
+.error strong { color: var(--red); }
+
+.badge { font-size: 11px; font-weight: 500; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 99px; }
+
+.table-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
+table.stmt { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+.stmt th, .stmt td { padding: 6px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.stmt thead th {
+  position: sticky; top: 0; background: var(--card); z-index: 2; text-align: right; vertical-align: bottom;
+}
+.stmt .sub { font-size: 11px; font-weight: 400; color: var(--muted); }
+.stmt .sticky-col { position: sticky; left: 0; background: var(--card); text-align: left; z-index: 1; min-width: 220px; }
+.stmt thead .sticky-col { z-index: 3; }
+.stmt td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stmt td.neg { color: var(--red); }
+.stmt td.txt { text-align: right; color: var(--muted); }
+.section-row td { background: var(--accent-soft); color: var(--accent); font-weight: 600; cursor: pointer; user-select: none; }
+.chev { display: inline-block; width: 1em; }
+
+.raw summary { cursor: pointer; color: var(--muted); }
+.raw pre { overflow: auto; max-height: 400px; font-size: 12px; }
+
+@media (max-width: 600px) {
+  input, select { min-width: 0; width: 100%; }
+  .controls label { flex: 1 1 140px; }
+}

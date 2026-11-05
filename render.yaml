@@ -1,0 +1,11 @@
+# Render Blueprint — one Docker web service serves both the API and the React UI.
+services:
+  - type: web
+    name: stock-financials
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: CORS_ORIGINS
+        value: '["*"]'
