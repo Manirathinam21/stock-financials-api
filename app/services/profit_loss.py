@@ -470,26 +470,15 @@ async def _fetch_financial_detail(filing: dict) -> dict:
     return {}
 
 
-<<<<<<< HEAD
 def _filter_by_report_type(filings_raw: list, report_type: str) -> list:
     if report_type == "consolidated":
         return [f for f in filings_raw if f.get("consolidated") == "Consolidated"]
     if report_type == "standalone":
-=======
-def _filter_consolidated(filings_raw: list, consolidated) -> list:
-    if consolidated is True:
-        return [f for f in filings_raw if f.get("consolidated") == "Consolidated"]
-    if consolidated is False:
->>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
         return [f for f in filings_raw if f.get("consolidated") in ("Non-Consolidated", "Standalone")]
     return filings_raw
 
 
-<<<<<<< HEAD
 async def get_stock_financials(symbol: str, report_type: str = "both", period: str = "Quarterly") -> dict:
-=======
-async def get_stock_financials(symbol: str, consolidated: bool = None, period: str = "Quarterly") -> dict:
->>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     """
     Get quarterly/annual Profit & Loss results for a stock.
 
@@ -499,17 +488,10 @@ async def get_stock_financials(symbol: str, consolidated: bool = None, period: s
 
     Args:
         symbol: NSE stock symbol (e.g. "RELIANCE", "HINDALCO").
-<<<<<<< HEAD
         report_type:
             "both"         -> both standalone and consolidated filings (default)
             "consolidated" -> only consolidated filings
             "standalone"   -> only standalone filings
-=======
-        consolidated:
-            None  -> both standalone and consolidated filings (default)
-            True  -> only consolidated filings
-            False -> only standalone filings
->>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
         period: "Quarterly" (default), "Annual", or "Both".
     """
     if period not in ("Quarterly", "Annual", "Both"):
@@ -538,11 +520,7 @@ async def get_stock_financials(symbol: str, consolidated: bool = None, period: s
     if not filings_raw:
         return {}
 
-<<<<<<< HEAD
     filings_raw = _filter_by_report_type(filings_raw, report_type)
-=======
-    filings_raw = _filter_consolidated(filings_raw, consolidated)
->>>>>>> 6d4b9288b9d086b7dadd641d3b3121b9bf289a6a
     if not filings_raw:
         return {}
 
