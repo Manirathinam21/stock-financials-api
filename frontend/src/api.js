@@ -30,6 +30,19 @@ export async function fetchFinancials({ mode, symbol, reportType, period, signal
   return body;
 }
 
+// Save any JSON-serialisable value as a .json file in the browser (no server round trip).
+export function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename.endsWith(".json") ? filename : `${filename}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export async function checkHealth() {
   try {
     const res = await fetch(`${BASE}/health`);

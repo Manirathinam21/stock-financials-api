@@ -1,8 +1,7 @@
 """
 Quarterly / Annual Profit & Loss statement extraction.
 
-Adapted from `niftyterminal/api/stocks.py` (`get_stock_financials` and its
-XBRL / legacy-HTML parsers). Source: NSE's Corporates Financial Results API
+Source: NSE's Corporates Financial Results API
 (`corporates-financial-results`), which lists every quarterly/annual result
 filing for a symbol; each filing is then downloaded as XBRL XML (recent
 filings) or legacy HTML (older filings, pre-~2018) and parsed into a

@@ -1,7 +1,7 @@
 """
 Core HTTP session management for NSE India API requests.
 
-Adapted from the `niftyterminal` project's `core/session.py`. Handles:
+Handles:
 - A shared, auto-refreshing httpx.AsyncClient with NSE cookie warmup
 - Browser-like headers / User-Agent rotation to avoid anti-bot detection
 - Rate limiting (NSE enforces ~3 req/s)

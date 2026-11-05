@@ -1,5 +1,5 @@
 """
-Shared parsing utilities, adapted from `niftyterminal/api/_utils.py`.
+Shared number-parsing utilities for NSE filings.
 """
 
 

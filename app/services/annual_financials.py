@@ -1,7 +1,7 @@
 """
 Annual Balance Sheet, Cash Flow Statement, and full Annual Report extraction.
 
-Adapted from `niftyterminal/api/fundamentals.py`. Uses NSE's Integrated
+Uses NSE's Integrated
 Filing API (iXBRL), which provides complete financial statements for listed
 companies. Annual (audited) filings contain Balance Sheet and Cash Flow;
 quarterly filings contain only P&L (use `app.services.profit_loss` for a

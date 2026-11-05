@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MODES, checkHealth, fetchFinancials } from "./api.js";
+import { MODES, checkHealth, downloadJson, fetchFinancials } from "./api.js";
 import StatementTable, {
   annualColumns,
   bsColumns,
@@ -9,36 +9,85 @@ import StatementTable, {
 
 const QUICK_SYMBOLS = ["RELIANCE", "TCS", "HDFCBANK", "INFY", "ITC", "SBIN"];
 
-function Section({ title, count, children }) {
+const MODE_ICONS = { overview: "◈", pnl: "₹", bs: "▤", cf: "⇄", annual: "❖" };
+
+const fmtNum = (v) =>
+  typeof v === "number" ? v.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
+
+// Pull headline numbers from the first P&L filing that has data.
+function headline(pnl) {
+  const filings = pnl?.filings || [];
+  const f = filings.find((x) => x.financial_data?.financials?.revenue_from_operations != null) || filings[0];
+  const fin = f?.financial_data?.financials || {};
+  const eps = f?.financial_data?.eps || {};
+  return {
+    period: f?.to_date || f?.relating_to || "—",
+    unit: f?.financial_data?.general_info?.rounding_unit || "",
+    revenue: fin.revenue_from_operations,
+    netProfit: fin.net_profit,
+    eps: eps.basic_total,
+  };
+}
+
+function Kpi({ label, value, hint }) {
+  return (
+    <div className="kpi">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value">{value}</div>
+      {hint && <div className="kpi-hint">{hint}</div>}
+    </div>
+  );
+}
+
+function Section({ title, count, onDownload, children }) {
   return (
     <section className="card">
-      <h2>
-        {title} {count !== undefined && <span className="badge">{count} filings</span>}
-      </h2>
+      <div className="card-head">
+        <h2>
+          {title} {count !== undefined && <span className="badge">{count} filings</span>}
+        </h2>
+        {onDownload && (
+          <button type="button" className="btn ghost sm" onClick={onDownload}>
+            ⭳ JSON
+          </button>
+        )}
+      </div>
       {children}
     </section>
   );
 }
 
-function Results({ mode, data }) {
+function Results({ mode, data, name }) {
   if (mode === "overview") {
     return (
       <>
-        <Section title="Profit & Loss" count={data.profit_and_loss?.total_filings}>
+        <Section
+          title="Profit & Loss"
+          count={data.profit_and_loss?.total_filings}
+          onDownload={() => downloadJson(data.profit_and_loss, `${name}_profit_loss`)}
+        >
           <StatementTable columns={pnlColumns(data.profit_and_loss)} />
         </Section>
         {data.balance_sheet && (
-          <Section title="Balance Sheet" count={data.balance_sheet.total_filings}>
+          <Section
+            title="Balance Sheet"
+            count={data.balance_sheet.total_filings}
+            onDownload={() => downloadJson(data.balance_sheet, `${name}_balance_sheet`)}
+          >
             <StatementTable columns={bsColumns(data.balance_sheet)} />
           </Section>
         )}
         {data.cash_flow && (
-          <Section title="Cash Flow" count={data.cash_flow.total_filings}>
+          <Section
+            title="Cash Flow"
+            count={data.cash_flow.total_filings}
+            onDownload={() => downloadJson(data.cash_flow, `${name}_cash_flow`)}
+          >
             <StatementTable columns={cfColumns(data.cash_flow)} />
           </Section>
         )}
         {data.period === "Quarterly" && (
-          <p className="muted">Balance Sheet and Cash Flow exist only in annual filings — choose Annual or Both.</p>
+          <p className="note">Balance Sheet and Cash Flow exist only in annual filings — choose Annual or Both.</p>
         )}
       </>
     );
@@ -47,7 +96,7 @@ function Results({ mode, data }) {
     pnl: ["Profit & Loss", pnlColumns],
     bs: ["Balance Sheet", bsColumns],
     cf: ["Cash Flow", cfColumns],
-    annual: ["Annual Report (P&L + Balance Sheet + Cash Flow + Segments)", annualColumns],
+    annual: ["Annual Report · P&L, Balance Sheet, Cash Flow, Segments", annualColumns],
   };
   const [title, toCols] = map[mode];
   return (
@@ -93,109 +142,169 @@ export default function App() {
     setState({ status: "loading" });
     try {
       const data = await fetchFinancials({ mode, symbol: sym, reportType, period, signal: ctrl.signal });
-      setState({ status: "done", data, mode, sym });
+      setState({ status: "done", data, mode, sym, reportType, period });
     } catch (err) {
       if (err.name === "AbortError") return;
       setState({ status: "error", error: err });
     }
   }
 
+  const done = state.status === "done";
+  const fileBase = done
+    ? [state.sym, state.mode, state.reportType, MODES.find((m) => m.id === state.mode).usesPeriod ? state.period : null]
+        .filter(Boolean)
+        .join("_")
+        .toLowerCase()
+    : "";
+
+  const pnl = done ? (state.mode === "overview" ? state.data.profit_and_loss : state.mode === "pnl" ? state.data : null) : null;
+  const hl = pnl ? headline(pnl) : null;
+  const company = done ? state.data.company_name || state.data.profit_and_loss?.company_name || "" : "";
+
   return (
-    <div className="app">
-      <header>
-        <div>
-          <h1>Stock Financials</h1>
-          <p className="muted">NSE-listed companies · P&amp;L, Balance Sheet, Cash Flow</p>
+    <>
+      <div className="hero">
+        <div className="wrap hero-inner">
+          <div className="brand">
+            <div className="logo">₹</div>
+            <div>
+              <h1>Stock Financials</h1>
+              <p>Profit &amp; Loss · Balance Sheet · Cash Flow for NSE-listed companies</p>
+            </div>
+          </div>
+          <span className={`health ${health === null ? "" : health ? "ok" : "bad"}`}>
+            <i /> {health === null ? "Checking API…" : health ? "API online" : "API unreachable"}
+          </span>
         </div>
-        <span className={`health ${health === null ? "" : health ? "ok" : "bad"}`}>
-          {health === null ? "checking API…" : health ? "API online" : "API unreachable"}
-        </span>
-      </header>
+      </div>
 
-      <nav className="tabs">
-        {MODES.map((m) => (
-          <button key={m.id} className={m.id === mode ? "active" : ""} onClick={() => setMode(m.id)} type="button">
-            {m.label}
-          </button>
-        ))}
-      </nav>
+      <main className="wrap">
+        <form className="card search" onSubmit={run}>
+          <nav className="tabs">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                className={m.id === mode ? "active" : ""}
+                onClick={() => setMode(m.id)}
+                type="button"
+              >
+                <span className="ico">{MODE_ICONS[m.id]}</span> {m.label}
+              </button>
+            ))}
+          </nav>
 
-      <form className="card controls" onSubmit={run}>
-        <label>
-          Symbol
-          <input
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value)}
-            placeholder="e.g. RELIANCE"
-            autoCapitalize="characters"
-            spellCheck={false}
-          />
-        </label>
-        <label>
-          Report type
-          <select value={reportType} onChange={(e) => setReportType(e.target.value)}>
-            <option value="consolidated">Consolidated</option>
-            <option value="standalone">Standalone</option>
-            <option value="both">Both</option>
-          </select>
-        </label>
-        {current.usesPeriod && (
-          <label>
-            Period
-            <select value={period} onChange={(e) => setPeriod(e.target.value)}>
-              <option value="Quarterly">Quarterly</option>
-              <option value="Annual">Annual</option>
-              <option value="Both">Both</option>
-            </select>
-          </label>
-        )}
-        <button className="primary" type="submit" disabled={state.status === "loading"}>
-          {state.status === "loading" ? "Fetching…" : "Get financials"}
-        </button>
-        <div className="chips">
-          {QUICK_SYMBOLS.map((s) => (
-            <button key={s} type="button" className="chip" onClick={() => setSymbol(s)}>
-              {s}
+          <div className="controls">
+            <label className="grow">
+              Symbol
+              <input
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value)}
+                placeholder="e.g. RELIANCE"
+                autoCapitalize="characters"
+                spellCheck={false}
+              />
+            </label>
+            <label>
+              Report type
+              <select value={reportType} onChange={(e) => setReportType(e.target.value)}>
+                <option value="consolidated">Consolidated</option>
+                <option value="standalone">Standalone</option>
+                <option value="both">Both</option>
+              </select>
+            </label>
+            {current.usesPeriod && (
+              <label>
+                Period
+                <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+                  <option value="Quarterly">Quarterly</option>
+                  <option value="Annual">Annual</option>
+                  <option value="Both">Both</option>
+                </select>
+              </label>
+            )}
+            <button className="btn primary" type="submit" disabled={state.status === "loading"}>
+              {state.status === "loading" ? "Fetching…" : "Get financials →"}
             </button>
-          ))}
-        </div>
-      </form>
-
-      {state.status === "loading" && (
-        <div className="card status">
-          <div className="spinner" />
-          <div>
-            Fetching filings from NSE… {elapsed}s
-            <div className="muted">Each filing is downloaded and parsed individually, so this can take 20–60 seconds.</div>
           </div>
-        </div>
-      )}
 
-      {state.status === "error" && (
-        <div className="card error">
-          <strong>{state.error.message}</strong>
-          <div className="muted">
-            {state.error.status === 404
-              ? "NSE returned nothing for this request. Check the symbol, or retry — NSE rate-limits and sometimes blocks requests."
-              : "The backend could not complete the request. Check the server logs."}
+          <div className="chips">
+            <span className="muted">Try:</span>
+            {QUICK_SYMBOLS.map((s) => (
+              <button key={s} type="button" className="chip" onClick={() => setSymbol(s)}>
+                {s}
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+        </form>
 
-      {state.status === "done" && (
-        <>
-          <h2 className="result-title">
-            {state.sym} <span className="muted">· {MODES.find((m) => m.id === state.mode).label}</span>
-          </h2>
-          <Results mode={state.mode} data={state.data} />
-          <details className="card raw">
-            <summary>Raw JSON response</summary>
-            <pre>{JSON.stringify(state.data, null, 2)}</pre>
-          </details>
-        </>
-      )}
+        {state.status === "idle" && (
+          <div className="empty">
+            <div className="empty-ico">📊</div>
+            <h3>Pick a company to get started</h3>
+            <p className="muted">Choose a symbol and statement type above, then hit “Get financials”.</p>
+          </div>
+        )}
 
-      <footer className="muted">Data sourced from NSE India public APIs. Values in the unit reported by each filing (see General info › Rounding unit).</footer>
-    </div>
+        {state.status === "loading" && (
+          <div className="card status">
+            <div className="spinner" />
+            <div>
+              <strong>Fetching filings from NSE… {elapsed}s</strong>
+              <div className="muted">
+                Each filing is downloaded and parsed individually, so this can take 20–60 seconds.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {state.status === "error" && (
+          <div className="card error">
+            <strong>⚠ {state.error.message}</strong>
+            <div className="muted">
+              {state.error.status === 404
+                ? "NSE returned nothing for this request. Check the symbol, or retry — NSE rate-limits and sometimes blocks requests."
+                : "The backend could not complete the request. Check the server logs."}
+            </div>
+          </div>
+        )}
+
+        {done && (
+          <>
+            <div className="result-head">
+              <div>
+                <h2 className="result-title">
+                  {state.sym} <span className="tag">{MODES.find((m) => m.id === state.mode).label}</span>
+                </h2>
+                {company && <div className="muted">{company}</div>}
+              </div>
+              <button type="button" className="btn primary" onClick={() => downloadJson(state.data, fileBase)}>
+                ⭳ Download JSON
+              </button>
+            </div>
+
+            {hl && (
+              <div className="kpis">
+                <Kpi label="Latest period" value={hl.period} hint={hl.unit && `Amounts in ${hl.unit}`} />
+                <Kpi label="Revenue from operations" value={fmtNum(hl.revenue)} />
+                <Kpi label="Net profit" value={fmtNum(hl.netProfit)} />
+                <Kpi label="Basic EPS" value={fmtNum(hl.eps)} />
+              </div>
+            )}
+
+            <Results mode={state.mode} data={state.data} name={fileBase} />
+
+            <details className="card raw">
+              <summary>Raw JSON response</summary>
+              <pre>{JSON.stringify(state.data, null, 2)}</pre>
+            </details>
+          </>
+        )}
+
+        <footer>
+          Data sourced from NSE India public filings. Values are in the unit reported by each filing
+          (see General info › Rounding unit).
+        </footer>
+      </main>
+    </>
   );
 }

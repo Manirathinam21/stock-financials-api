@@ -3,10 +3,8 @@
 A FastAPI backend that extracts **Annual & Quarterly Profit & Loss statements,
 Balance Sheet, and Cash Flow statements** for Indian (NSE-listed) stocks.
 
-Built from the fundamentals-extraction code in the [`niftyterminal`](https://github.com/Mwsurjith/niftyterminal)
-project (`niftyterminal/api/fundamentals.py` and the financials parser in
-`niftyterminal/api/stocks.py`), repackaged as a standalone service — the
-commodity/ETF/indices/market modules were intentionally dropped.
+A standalone service with a React dashboard on top, focused purely on company
+fundamentals.
 
 ## Data sources
 
@@ -18,8 +16,8 @@ commodity/ETF/indices/market modules were intentionally dropped.
 
 Both sources are scraped directly from NSE's public web APIs (no API key
 required), with cookie warmup, header spoofing, rate limiting, and
-exponential-backoff retries built in — the same approach `niftyterminal`
-used, since NSE blocks naive/unauthenticated requests.
+exponential-backoff retries built in, since NSE blocks naive/unauthenticated
+requests.
 
 ## Project layout
 
